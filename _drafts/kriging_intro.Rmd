@@ -2,7 +2,7 @@
 title: "Introduction to Kriging in R"
 author: "nabil Abd..."
 date: "October 14, 2015"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -47,7 +47,7 @@ glimpse(meuse)
 
 ```
 
-The meuse dataset contains concentration measurements for a number of chemical elements, at the Meuse river in the Netherlands. More information can be found by checking the help page via "?meuse"
+The meuse dataset contains concentration measurements for a number of chemical elements, at the Meuse river in the Netherlands. More information can be found by checking the help page via `?meuse`.
 
 Of particular interest is that each of the values/measurements, are associated with geographic coordinates, the x- and y- columns. A priori, given just the dataframe and no additional information, it might not be clear that those two columns indicate locations (I, at least, had never heard of RDH coordinates before). And that's what the motivation for SPDF's was, to provide a structure which allows for coordinates to very clearly be associated with data points corresponding to them. 
 
@@ -99,11 +99,11 @@ Here, we see that a couple of things happen when we specify the coordinates. Fir
 - bbox
 - and proj4string. 
 
-The "data" slot contains all the variables associated with different spatial locations. Those locations, though, are stored in the "coords" slot, which is a matrix of all spatial locations with corresponding values in the dataframe. "coords.nrs" contains the column numbers of the spatial coordinates in the dataframe, like if you coerce the SPDF to a dataframe first (see below). 
+The `data` slot contains all the variables associated with different spatial locations. Those locations, though, are stored in the `coords` slot, which is a matrix of all spatial locations with corresponding values in the dataframe. `coords.nrs` contains the column numbers of the spatial coordinates in the dataframe, like if you coerce the SPDF to a dataframe first (see below). 
 
-"bbox" is the bounding box, that is, four points (or, "corners") which denote the spatial extent of the data. "proj4string" is the slot which contains the projection information, that is, what projection are the coordinates in? Since we haven't specified that yet, it's currently set to NA. 
+`bbox` is the bounding box, that is, four points (or, "corners") which denote the spatial extent of the data. `proj4string` is the slot which contains the projection information, that is, what projection are the coordinates in? Since we haven't specified that yet, it's currently set to NA. 
 
-Each of these slots can be accessed either directly via the "@" operator, or via helper functions which simplify the syntax for accessing them, e.g., 
+Each of these slots can be accessed either directly via the `@` operator, or via helper functions which simplify the syntax for accessing them, e.g., 
 
 ```{r}
 # access various slots of the SPDF
@@ -151,7 +151,7 @@ Since these functions don't (at least to me), have immediately obvious orderings
 
 The "variogram" function can take two arguments: the first being denoting how one or more variables interact spatially, and the second is an SPDF where those variables reside. 
 
-For the fit.variogram function, a sample variogram is the first argument. The second is the model, with parameters, to be fit to the sample variogram. For a list of all possible variograms that can be used, call "vgm()", and to see graphical properties/characteristics of these models, call "show.vgms()".
+For the fit.variogram function, a sample variogram is the first argument. The second is the model, with parameters, to be fit to the sample variogram. For a list of all possible variograms that can be used, call `vgm`, and to see graphical properties/characteristics of these models, call `show.vgms`.
 
 With the sample and fit variogram, one can plot them together to see how well the fit was:
 
@@ -217,7 +217,7 @@ lzn.kriged %>% as.data.frame %>%
   theme_bw()
 ```
 
-From this, we see that the zinc concentrations tend to be higher closer to the coast ("var1.pred" is the predicted measurement for the variable being interpolated). And what's more, lzn.kriged also contains the variance of each prediction as well.
+From this, we see that the zinc concentrations tend to be higher closer to the coast (`var1.pred` is the predicted measurement for the variable being interpolated). And what's more, lzn.kriged also contains the variance of each prediction as well.
 
 ## Further Resources
 

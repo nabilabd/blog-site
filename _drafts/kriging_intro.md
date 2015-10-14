@@ -2,7 +2,7 @@
 title: "Introduction to Kriging in R"
 author: "nabil Abd..."
 date: "October 14, 2015"
-output: pdf_document
+output: html_document
 ---
 
 
@@ -64,7 +64,7 @@ glimpse(meuse)
 ## $ dist.m  (dbl) 50, 30, 150, 270, 380, 470, 240, 120, 240, 420, 400, 3...
 ```
 
-The meuse dataset contains concentration measurements for a number of chemical elements, at the Meuse river in the Netherlands. More information can be found by checking the help page via "?meuse"
+The meuse dataset contains concentration measurements for a number of chemical elements, at the Meuse river in the Netherlands. More information can be found by checking the help page via `?meuse`.
 
 Of particular interest is that each of the values/measurements, are associated with geographic coordinates, the x- and y- columns. A priori, given just the dataframe and no additional information, it might not be clear that those two columns indicate locations (I, at least, had never heard of RDH coordinates before). And that's what the motivation for SPDF's was, to provide a structure which allows for coordinates to very clearly be associated with data points corresponding to them. 
 
@@ -183,11 +183,11 @@ Here, we see that a couple of things happen when we specify the coordinates. Fir
 - bbox
 - and proj4string. 
 
-The "data" slot contains all the variables associated with different spatial locations. Those locations, though, are stored in the "coords" slot, which is a matrix of all spatial locations with corresponding values in the dataframe. "coords.nrs" contains the column numbers of the spatial coordinates in the dataframe, like if you coerce the SPDF to a dataframe first (see below). 
+The `data` slot contains all the variables associated with different spatial locations. Those locations, though, are stored in the `coords` slot, which is a matrix of all spatial locations with corresponding values in the dataframe. `coords.nrs` contains the column numbers of the spatial coordinates in the dataframe, like if you coerce the SPDF to a dataframe first (see below). 
 
-"bbox" is the bounding box, that is, four points (or, "corners") which denote the spatial extent of the data. "proj4string" is the slot which contains the projection information, that is, what projection are the coordinates in? Since we haven't specified that yet, it's currently set to NA. 
+`bbox` is the bounding box, that is, four points (or, "corners") which denote the spatial extent of the data. `proj4string` is the slot which contains the projection information, that is, what projection are the coordinates in? Since we haven't specified that yet, it's currently set to NA. 
 
-Each of these slots can be accessed either directly via the "@" operator, or via helper functions which simplify the syntax for accessing them, e.g., 
+Each of these slots can be accessed either directly via the `@` operator, or via helper functions which simplify the syntax for accessing them, e.g., 
 
 
 ```r
@@ -312,7 +312,7 @@ Since these functions don't (at least to me), have immediately obvious orderings
 
 The "variogram" function can take two arguments: the first being denoting how one or more variables interact spatially, and the second is an SPDF where those variables reside. 
 
-For the fit.variogram function, a sample variogram is the first argument. The second is the model, with parameters, to be fit to the sample variogram. For a list of all possible variograms that can be used, call "vgm()", and to see graphical properties/characteristics of these models, call "show.vgms()".
+For the fit.variogram function, a sample variogram is the first argument. The second is the model, with parameters, to be fit to the sample variogram. For a list of all possible variograms that can be used, call `vgm`, and to see graphical properties/characteristics of these models, call `show.vgms`.
 
 With the sample and fit variogram, one can plot them together to see how well the fit was:
 
@@ -392,7 +392,7 @@ lzn.kriged %>% as.data.frame %>%
 
 ![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 
 
-From this, we see that the zinc concentrations tend to be higher closer to the coast ("var1.pred" is the predicted measurement for the variable being interpolated). And what's more, lzn.kriged also contains the variance of each prediction as well.
+From this, we see that the zinc concentrations tend to be higher closer to the coast (`var1.pred` is the predicted measurement for the variable being interpolated). And what's more, lzn.kriged also contains the variance of each prediction as well.
 
 ## Further Resources
 
@@ -427,54 +427,40 @@ devtools::session_info()
 ```
 
 ```
-##  package     * version    date       source                           
-##  assertthat    0.1        2013-12-06 CRAN (R 3.1.0)                   
-##  colorspace    1.2-6      2015-03-11 CRAN (R 3.1.3)                   
-##  DBI           0.3.1.9008 2015-05-25 Github (rstats-db/DBI@0a4f0af)   
-##  devtools      1.9.1      2015-09-11 CRAN (R 3.1.2)                   
-##  digest        0.6.8      2014-12-31 CRAN (R 3.1.2)                   
-##  dplyr       * 0.4.3      2015-09-01 CRAN (R 3.1.2)                   
-##  evaluate      0.8        2015-09-18 CRAN (R 3.1.3)                   
-##  FNN           1.1        2013-07-31 CRAN (R 3.1.1)                   
-##  formatR       1.2.1      2015-09-18 CRAN (R 3.1.3)                   
-##  geosphere     1.4-3      2015-07-02 CRAN (R 3.1.3)                   
-##  ggmap       * 2.5.2      2015-08-21 CRAN (R 3.1.3)                   
-##  ggplot2     * 1.0.1      2015-03-17 CRAN (R 3.1.2)                   
-##  gridExtra   * 2.0.0      2015-07-14 CRAN (R 3.1.3)                   
-##  gstat       * 1.0-26     2015-08-26 CRAN (R 3.1.3)                   
-##  gtable        0.1.2      2012-12-05 CRAN (R 3.1.0)                   
-##  intervals     0.15.0     2014-09-19 CRAN (R 3.1.1)                   
-##  jpeg          0.1-8      2014-01-23 CRAN (R 3.1.2)                   
-##  knitr       * 1.11       2015-08-14 CRAN (R 3.1.2)                   
-##  labeling      0.3        2014-08-23 CRAN (R 3.1.1)                   
-##  lattice       0.20-33    2015-07-14 CRAN (R 3.1.3)                   
-##  lazyeval      0.1.10     2015-01-02 CRAN (R 3.1.2)                   
-##  lubridate   * 1.4.0.9500 2015-05-25 Github (hadley/lubridate@f9761ce)
-##  magrittr    * 1.5        2014-11-22 CRAN (R 3.1.2)                   
-##  mapproj     * 1.2-4      2015-08-03 CRAN (R 3.1.3)                   
-##  maps        * 3.0.0-2    2015-10-02 CRAN (R 3.1.3)                   
-##  MASS          7.3-41     2015-06-18 CRAN (R 3.1.3)                   
-##  memoise       0.2.1      2014-04-22 CRAN (R 3.1.0)                   
-##  munsell       0.4.2      2013-07-11 CRAN (R 3.1.0)                   
-##  ncdf        * 1.6.8      2015-02-06 CRAN (R 3.1.2)                   
-##  plyr        * 1.8.3      2015-06-12 CRAN (R 3.1.3)                   
-##  png           0.1-7      2013-12-03 CRAN (R 3.1.0)                   
-##  proto         0.3-10     2012-12-22 CRAN (R 3.1.0)                   
-##  R6            2.1.1      2015-08-19 CRAN (R 3.1.3)                   
-##  Rcpp          0.12.1     2015-09-10 CRAN (R 3.1.3)                   
-##  reshape2      1.4.1      2014-12-06 CRAN (R 3.1.2)                   
-##  rgdal       * 1.0-7      2015-09-06 CRAN (R 3.1.2)                   
-##  RgoogleMaps   1.2.0.7    2015-01-21 CRAN (R 3.1.2)                   
-##  rjson         0.2.15     2014-11-03 CRAN (R 3.1.2)                   
-##  RJSONIO       1.3-0      2014-07-28 CRAN (R 3.1.1)                   
-##  scales      * 0.3.0      2015-08-25 CRAN (R 3.1.3)                   
-##  sp          * 1.1-1      2015-06-05 CRAN (R 3.1.3)                   
-##  spacetime   * 1.1-4      2015-04-24 CRAN (R 3.1.3)                   
-##  stringi       0.5-5      2015-06-29 CRAN (R 3.1.3)                   
-##  stringr     * 1.0.0      2015-04-30 CRAN (R 3.1.3)                   
-##  tidyr       * 0.3.1      2015-09-10 CRAN (R 3.1.2)                   
-##  xts           0.9-7      2014-01-02 CRAN (R 3.1.0)                   
-##  zoo           1.7-12     2015-03-16 CRAN (R 3.1.3)
+##  package    * version    date       source                        
+##  assertthat   0.1        2013-12-06 CRAN (R 3.1.0)                
+##  colorspace   1.2-6      2015-03-11 CRAN (R 3.1.3)                
+##  DBI          0.3.1.9008 2015-05-25 Github (rstats-db/DBI@0a4f0af)
+##  devtools     1.9.1      2015-09-11 CRAN (R 3.1.2)                
+##  digest       0.6.8      2014-12-31 CRAN (R 3.1.2)                
+##  dplyr      * 0.4.3      2015-09-01 CRAN (R 3.1.2)                
+##  evaluate     0.8        2015-09-18 CRAN (R 3.1.3)                
+##  FNN          1.1        2013-07-31 CRAN (R 3.1.1)                
+##  formatR      1.2.1      2015-09-18 CRAN (R 3.1.3)                
+##  ggplot2    * 1.0.1      2015-03-17 CRAN (R 3.1.2)                
+##  gridExtra  * 2.0.0      2015-07-14 CRAN (R 3.1.3)                
+##  gstat      * 1.0-26     2015-08-26 CRAN (R 3.1.3)                
+##  gtable       0.1.2      2012-12-05 CRAN (R 3.1.0)                
+##  intervals    0.15.0     2014-09-19 CRAN (R 3.1.1)                
+##  knitr      * 1.11       2015-08-14 CRAN (R 3.1.2)                
+##  labeling     0.3        2014-08-23 CRAN (R 3.1.1)                
+##  lattice      0.20-33    2015-07-14 CRAN (R 3.1.3)                
+##  magrittr   * 1.5        2014-11-22 CRAN (R 3.1.2)                
+##  MASS         7.3-41     2015-06-18 CRAN (R 3.1.3)                
+##  memoise      0.2.1      2014-04-22 CRAN (R 3.1.0)                
+##  munsell      0.4.2      2013-07-11 CRAN (R 3.1.0)                
+##  plyr         1.8.3      2015-06-12 CRAN (R 3.1.3)                
+##  proto        0.3-10     2012-12-22 CRAN (R 3.1.0)                
+##  R6           2.1.1      2015-08-19 CRAN (R 3.1.3)                
+##  Rcpp         0.12.1     2015-09-10 CRAN (R 3.1.3)                
+##  reshape2     1.4.1      2014-12-06 CRAN (R 3.1.2)                
+##  scales     * 0.3.0      2015-08-25 CRAN (R 3.1.3)                
+##  sp         * 1.1-1      2015-06-05 CRAN (R 3.1.3)                
+##  spacetime    1.1-4      2015-04-24 CRAN (R 3.1.3)                
+##  stringi      0.5-5      2015-06-29 CRAN (R 3.1.3)                
+##  stringr      1.0.0      2015-04-30 CRAN (R 3.1.3)                
+##  xts          0.9-7      2014-01-02 CRAN (R 3.1.0)                
+##  zoo          1.7-12     2015-03-16 CRAN (R 3.1.3)
 ```
 
 
