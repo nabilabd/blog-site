@@ -119,7 +119,7 @@ identical( bbox(meuse), meuse@bbox )
 identical( coordinates(meuse), meuse@coords )
 ```
 
-I'm not sure what the helper function for the coords.nrs slot is; while that slot contains the column numbers, the "coordnames" function gives the names of the columns containing the spatial coordinates.
+I'm not sure what the helper function for the `coords.nrs` slot is; while that slot contains the column numbers, the `coordnames` function gives the names of the columns containing the spatial coordinates.
 
 Sometimes, certain functions (like with ggplot2) require using a dataframe and not an SPDF. In such cases, one can manually coerce the data back to a dataframe, to retain the coordinate information, as opposed to just accessing the "data" slot: 
 
@@ -134,7 +134,7 @@ Once coerced, the data can just be piped into the next function you want to use.
 
 To perform kriging, you must first have a variogram model, from which the data can be interpolated. There are a couple steps involved:
 
-1. Calculate the sample variogram. This is done with the "variogram" function.
+1. Calculate the sample variogram. This is done with the `variogram` function.
 
 2. Fit a model to the sample variogram
 

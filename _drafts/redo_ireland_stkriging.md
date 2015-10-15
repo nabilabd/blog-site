@@ -97,6 +97,18 @@ re_bound <- . %>% bbox %>% as.data.frame %>%
 
 # obtain map and form positions for station labels
 my_map <- wind.loc %>% re_bound %>% get_map(., source = "osm")
+```
+
+```
+## Warning in download.file(url, destfile = destfile, quiet = !messaging, mode
+## = "wb"): cannot open: HTTP status was '0 (null)'
+```
+
+```
+## Error: map grabbing failed - see details in ?get_openstreetmap.
+```
+
+```r
 offsets <- wind.loc %>% as.data.frame %>% select(Station, x, y) %>% 
   mutate(y = y + .1)
 
@@ -108,7 +120,9 @@ my_map %>%
   annotate("text", x = offsets$x, y = offsets$y, label=offsets$Station, size=4)
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+```
+## Error in eval(expr, envir, enclos): object 'my_map' not found
+```
 
 
 
