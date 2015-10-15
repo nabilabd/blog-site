@@ -9,7 +9,7 @@ output: html_document
 
 ## Introduction
 
-When I first started working with spatial data in R, it took me a while before I could get used to it. There was several obstacles, not the least of which being just to find which tutorials in which sequence would best help me grasp the larger picture of SP* classes. My own personal difficulties aside, I eventually acclimated myself to them, and joined the r-sig-geo group to follow up with any developments pertinent to my work. 
+When I first started working with spatial data in R, it took me a while before I could get used to it. There were several obstacles, not the least of which being just to find which tutorials in which sequence would best help me grasp the larger picture of SP* classes. My own personal difficulties aside, I eventually acclimated myself to them, and joined the r-sig-geo group to follow up with any developments pertinent to my work. 
 
 So, partly as a means of contributing to documentation that would help my own code be more readily understood by others, and partly due to finding that professionals on the r-sig-geo group were encountering some similar questions I had when I first started, I thought I would present an overview of some of the functionality available for working with spatial data in R.
 
@@ -17,7 +17,7 @@ This document, though, is intended to be an introduction to working with kriging
 
 ## Packages Used
 
-In working with spatial data, the sp library is essential, and what many other packages build off of. More specifically, the spatial classes (e.g., SpatialPoints, SpatialPointsDataFrame, etc) are defined in the sp package, while spatio-temporal classes are defined in the spacetime package. 
+In working with spatial data the sp library is essential, and what many other packages build off of. More specifically, the spatial classes (e.g., SpatialPoints, SpatialPointsDataFrame, etc) are defined in the sp package, while spatio-temporal classes are defined in the spacetime package. 
 
 For working with spatial (and spatio-temporal) data, we use the gstat package, which includes functionality for kriging, among other many things. 
 
@@ -64,11 +64,11 @@ glimpse(meuse)
 ## $ dist.m  (dbl) 50, 30, 150, 270, 380, 470, 240, 120, 240, 420, 400, 3...
 ```
 
-The meuse dataset contains concentration measurements for a number of chemical elements, at the Meuse river in the Netherlands. More information can be found by checking the help page via `?meuse`.
+The meuse dataset contains concentration measurements for a number of chemical elements taken from the Meuse river in the Netherlands. More information can be found by checking the help page via `?meuse`.
 
-Of particular interest is that each of the values/measurements, are associated with geographic coordinates, the x- and y- columns. A priori, given just the dataframe and no additional information, it might not be clear that those two columns indicate locations (I, at least, had never heard of RDH coordinates before). And that's what the motivation for SPDF's was, to provide a structure which allows for coordinates to very clearly be associated with data points corresponding to them. 
+Of particular interest is that each value/measurement is associated with geographic coordinates, namely the x- and y- columns. A priori, given just the dataframe and no additional information, it might not be clear that those two columns indicate locations (I, at least, had never heard of RDH coordinates before). And that's what the motivation for SPDF's was: to provide a structure which allows for coordinates to clearly be associated with corresponding data points.
 
-Visually, we can inspect how zinc, for example, varies over the domain of interest, where we map concentration to point size:
+For example, we can visually inspect how zinc varies over the domain of interest where we map concentration to point size:
 
 
 ```r
@@ -79,16 +79,14 @@ meuse %>% as.data.frame %>%
 
 ![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
 
-Clearly, the representiveness of the points sampled is still wanting, so ideally we would be able to estimate the zinc concentrations at other locations for which we don't have measurements. That's where kriging comes in.
+Clearly, the representativeness of the points sampled is still wanting, so ideally we would be able to estimate the zinc concentrations at other locations for which we don't have measurements. That's where kriging comes in.
 
 ## Implementation
 
 Broadly speaking, there are a few steps involved in kriging a dataset. Assuming that the data is stored in a dataframe, then one must: 
 
-1. Convert the dataframe to a spatial points dataframe (SPDF)
-
-2. Fit a variogram model to the data
-
+1. Convert the dataframe to a spatial points dataframe (SPDF).
+2. Fit a variogram model to the data.
 3. Krige the data according to the variogram. 
 
 
@@ -175,19 +173,19 @@ str(meuse)
 
 #### Comments
 
-Here, we see that a couple of things happen when we specify the coordinates. First, the dataframe becomes an SPDF. The SPDF class is structured in a way that the data is now clearly distinguished from the coordinates; under the hood, it is represented as an S4 object, where its data/attributes are stored in different "slots". For SPDF objects in particular, there are five different slots: 
+Here we see that a couple of things happen when we specify the coordinates. First, the dataframe becomes an SPDF. The SPDF class is structured in a way that the data is now clearly distinguished from the coordinates; under the hood, it is represented as an S4 object, where its data/attributes are stored in different "slots". For SPDF objects in particular, there are five different slots: 
 
-- data 
-- coords.nrs
-- coords
-- bbox
-- and proj4string. 
+* data 
+* coords.nrs
+* coords
+* bbox
+* and proj4string. 
 
 The `data` slot contains all the variables associated with different spatial locations. Those locations, though, are stored in the `coords` slot, which is a matrix of all spatial locations with corresponding values in the dataframe. `coords.nrs` contains the column numbers of the spatial coordinates in the dataframe, like if you coerce the SPDF to a dataframe first (see below). 
 
-`bbox` is the bounding box, that is, four points (or, "corners") which denote the spatial extent of the data. `proj4string` is the slot which contains the projection information, that is, what projection are the coordinates in? Since we haven't specified that yet, it's currently set to NA. 
+`bbox` is the bounding box, that is, four points (or "corners") which denote the spatial extent of the data. `proj4string` is the slot which contains the projection information, that is, what projection are the coordinates in? Since we haven't specified that yet, it's currently set to NA. 
 
-Each of these slots can be accessed either directly via the `@` operator, or via helper functions which simplify the syntax for accessing them, e.g., 
+Each of these slots can be accessed either directly via the `@` operator or via helper functions which simplify the syntax for accessing them, e.g., 
 
 
 ```r
@@ -220,7 +218,7 @@ proj4string(meuse)
 ## [1] NA
 ```
 
-And of course, both ways of accessing the slots, yield the same results: 
+And of course, both ways of accessing the slots yield the same results: 
 
 
 ```r
@@ -239,9 +237,9 @@ identical( coordinates(meuse), meuse@coords )
 ## [1] TRUE
 ```
 
-I'm not sure what the helper function for the coords.nrs slot is; while that slot contains the column numbers, the "coordnames" function gives the names of the columns containing the spatial coordinates.
+I'm not sure what the helper function for the `coords.nrs` slot is; while that slot contains the column numbers, the `coordnames` function gives the names of the columns containing the spatial coordinates.
 
-Sometimes, certain functions (like with ggplot2) require using a dataframe and not an SPDF. In such cases, one can manually coerce the data back to a dataframe, to retain the coordinate information, as opposed to just accessing the "data" slot: 
+Sometimes certain functions (like with ggplot2) require using a dataframe and not an SPDF. In such cases, one can manually coerce the data back to a dataframe to retain the coordinate information, as opposed to just accessing the `data` slot: 
 
 
 ```r
@@ -294,9 +292,8 @@ Once coerced, the data can just be piped into the next function you want to use.
 
 To perform kriging, you must first have a variogram model, from which the data can be interpolated. There are a couple steps involved:
 
-1. Calculate the sample variogram. This is done with the "variogram" function.
-
-2. Fit a model to the sample variogram
+1. Calculate the sample variogram. This is done with the `variogram` function.
+2. Fit a model to the sample variogram.
 
 For example, a variogram could be fit as simply as the following code:
 
@@ -308,9 +305,9 @@ lzn.fit <- fit.variogram(lzn.vgm, model=vgm(1, "Sph", 900, 1)) # fit model
 
 #### Commentary
 
-Since these functions don't (at least to me), have immediately obvious orderings for the parameters used, it's probably worthwhile to elaborate on what the objects being passed as parameters aactually are. 
+Since these functions don't (at least to me) have immediately obvious orderings for the parameters used, it's probably worthwhile to elaborate on what the objects being passed as parameters actually are. 
 
-The "variogram" function can take two arguments: the first being denoting how one or more variables interact spatially, and the second is an SPDF where those variables reside. 
+The `variogram` function can take two arguments: the first being denoting how one or more variables interact spatially, and the second is an SPDF where those variables reside. 
 
 For the fit.variogram function, a sample variogram is the first argument. The second is the model, with parameters, to be fit to the sample variogram. For a list of all possible variograms that can be used, call `vgm`, and to see graphical properties/characteristics of these models, call `show.vgms`.
 
@@ -323,13 +320,11 @@ plot(lzn.vgm, lzn.fit) # plot the sample values, along with the fit model
 
 ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
 
-
-
 ### 3) Performing Kriging
 
 #### Setup
 
-By definition, interpolation is estimating values at points we don't have measurements for, based on the points for which we do have measurements. Then, we need two spatial domains: one having values associated with the points, and one for which we want estimates. In this example, the spatial domains we use are those of "meuse" and "meuse.grid":
+By definition, interpolation is estimating values at points we don't have measurements for based on the points for which we do have measurements. So we need two spatial domains: one having values associated with the points, and one for which we want estimates. In this example, the spatial domains we use are those of "meuse" and "meuse.grid":
 
 
 ```r
@@ -357,15 +352,12 @@ grid.arrange(plot1, plot2, ncol = 2)
 
 Once we have the prepared all of the above, we are now ready to krige. This can be done with the gstat::krige function, which usually takes four arguments:
 
-1. The model formula
-
-2. An SPDF of the spatial domain that has measurements
-
-3. An SPDF of the spatial domain to krige over
-
+1. The model formula.
+2. An SPDF of the spatial domain that has measurements.
+3. An SPDF of the spatial domain to krige over.
 4. A variogram model fitted to the data.
 
-Note that the second and third arguments have to be SPDF's, and cannot just be dataframes.
+Note that the second and third arguments have to be SPDF's and cannot just be dataframes.
 
 Now, the kriging step can be performed in a single function call:
 
@@ -392,11 +384,11 @@ lzn.kriged %>% as.data.frame %>%
 
 ![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 
 
-From this, we see that the zinc concentrations tend to be higher closer to the coast (`var1.pred` is the predicted measurement for the variable being interpolated). And what's more, lzn.kriged also contains the variance of each prediction as well.
+From this we see that the zinc concentrations tend to be higher closer to the coast (`var1.pred` is the predicted measurement for the variable being interpolated). Moreover, lzn.kriged contains the variance of each prediction as well.
 
 ## Further Resources
 
-This document was intended to be more of a light introduction on how kriging is done, for someone looking to start using R for spatial data analysis. For a little more detail, see the document where I work through the meuse tutorial, and elaborate on parts that weren't immediately clear to me. That covers more on how some of these different objects are structured.
+This document was intended to be a light introduction on how kriging is done for someone looking to start using R for spatial data analysis. For a little more detail, see the document where I work through the meuse tutorial and elaborate on parts that weren't immediately clear to me. That covers more on how some of these different objects are structured.
 
 Now, depending on how much data you are working with, you might not be able to manually specify the parameters for each variogram you fit a set of data to. Once you become more comfortable with how variogram modelling and kriging works, you might want to take a look at the [automap package](http://www.numbertheory.nl/2013/02/17/automatic-spatial-interpolation-with-r-the-automap-package/) by Paul Hiemstra; it's been extremely helpful for the modeling work I do.
 
@@ -419,7 +411,7 @@ devtools::session_info()
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/New_York            
-##  date     2015-10-14
+##  date     2015-10-15
 ```
 
 ```
