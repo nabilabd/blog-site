@@ -1,6 +1,6 @@
 ---
-title: "meuse_tutorial"
-author: "nabil"
+title: "Meuse Tutorial (expanded)"
+author: "nabil A."
 date: "January 20, 2015"
 output: html_document
 ---
@@ -24,7 +24,7 @@ like I had a comfortable sense of what was happening. So, I thought I could
 elaborate on parts which weren't immediately obvious to me. Along the way, to 
 help myself, I thought to code it how I've become used to. Hence, the plots 
 are all re-done in ggplot2 (with the originals alongside for comparison), and 
-the pipe operator %>% can really help clarify steps in involved operations. 
+the pipe operator `%>%` can really help clarify steps in involved operations. 
 
 
 ```r
@@ -69,7 +69,7 @@ str(meuse)
 ##  $ dist.m : num  50 30 150 270 380 470 240 120 240 420 ...
 ```
 
-If you'll notice, there are two columns "x" and "y" in the dataset. These are 
+If you'll notice, there are two columns `x` and `y` in the dataset. These are 
 the coordinates of the location which that row of the dataframe corresponds to 
 (if the numbers seem large, don't worry, it's just Rijksdriehoek (RDH) 
 coordinates, used in the Netherlands.)
@@ -78,7 +78,7 @@ Now, while it's easy to include spatial information, like coordinates, just
 in columns of a dataframe, if someone else looks at the data, it might not be 
 obvious what all the variables in the columns represent. So, one way to deal 
 with this is to more concretely identify the observations with the corresponding 
-location. Here, the result is going to be a Spatial Points Data Frame. This 
+location. Here, the result is going to be a `SpatialPointsDataFrame`. This 
 assignment can be done like normally, except that the formula notation is used:
 
 
@@ -209,7 +209,7 @@ as.data.frame, which can be a lot quicker and cleaner than alternatives:
 meuse_df <- cbind( attr(meuse, "data"), meuse@coords) # just coerce to df
 ```
 
-The sp package comes with special built-in graphing functions, such as "bubble": 
+The sp package comes with special built-in graphing functions, such as `bubble`: 
 
 
 ```r
@@ -220,7 +220,7 @@ bubble(meuse, "zinc", col = c("#00ff0088", "#00ff0088"),
 
 ![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
 
-The equivalent can also be made using ggplot:
+The equivalent can also be made using `ggplot`:
 
 
 ```r
@@ -246,7 +246,19 @@ meuse %>% as.data.frame %>%
 # plan: convert rdh to longlat, then assign longlat, then transform to rdh
 # TODO: incorporate this into a post on using ggmap with spatial data.
 library(rgdal)
+```
 
+```
+## rgdal: version: 1.0-7, (SVN revision 559)
+##  Geospatial Data Abstraction Library extensions to R successfully loaded
+##  Loaded GDAL runtime: GDAL 1.11.3, released 2015/09/16
+##  Path to GDAL shared files: /usr/local/Cellar/gdal/1.11.3_1/share/gdal
+##  Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+##  Path to PROJ.4 shared files: (autodetected)
+##  Linking to sp version: 1.1-1
+```
+
+```r
 ESPG <- make_EPSG()
 ESPG[which(ESPG$code == 28992), ]
 ```
@@ -264,7 +276,7 @@ rdh_proj <- ESPG[which(ESPG$code == 28992), "prj4"]
 #proj4string(meuse) = "+proj=longlat +datum=WGS84"
 ```
 
-Along with the meuse dataset is one called meuse.grid. Later on in the 
+Along with the `meuse` dataset is one called `meuse.grid`. Later on in the 
 interpolation, it's used as locations to predict concentrations for.  At first, 
 it's just a regular dataframe like meuse was:
 
@@ -338,7 +350,7 @@ These two plots pretty much summarize our interpolation problem: given values
 at the locations in the latter plot, we want to interpolate over all values in 
 the former plot. 
 
-And just as before, we specify that the x and y columns are actually coordinates 
+And just as before, we specify that the `x` and `y` columns are actually coordinates 
 for the observations. Here, though, we can also manually specify that meuse.grid 
 actually cotains a grid of points. Although this might not appear to change 
 anything if you only inspect the class, the attributes of the object do change 
@@ -379,19 +391,25 @@ meuse.grid %>% as.data.frame %>%
 ![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-2.png) 
 
 Alternatively, instead of using tiles, one could go Seurat-style and call 
-geom_point() with small size (but, just note that scale_color_gradient goes with 
-points, and scale_fill_gradient with tiles). 
+`geom_point` with small size (but, just note that `scale_color_gradient` goes with 
+points, and `scale_fill_gradient` with tiles). 
 
 ## Kriging interpolation of remaining points
 
 To recap up to this point: we have values at some points, and want to 
 interpolate over an entire grid. In this case, we can use gstat's kriging 
-functions. In particular, we'll just start off with the simple "krige" for now.
+functions. In particular, we'll just start off with the simple `krige` for now.
 
 
 ```r
 library(gstat)
+```
 
+```
+## Warning: package 'gstat' was built under R version 3.1.3
+```
+
+```r
 zinc.idw <- krige(zinc ~ 1, meuse, meuse.grid)
 ```
 
@@ -424,22 +442,22 @@ zinc.idw %>% as.data.frame %>% head
 ```
 
 Here, there are a couple things to note. First, the function takes a "formula" 
-argument. Since we want to interpolate for values of zinc, we would use 
+argument. Since we want to interpolate for values of `zinc`, we would use 
 "ordinary", or "simple", kriging, in which case we use the notation 
 "[variable] ~ 1". The second argument is the where the values of that 
 variable being interpolated, come from. The third is the region of interest, 
 such as a grid of spatial locations we want estimated predictions for.
 
-The result of the kriging is a data frame with coordinates (x and y), 
-predicted values of the variable ("var1.pred"), and variance of the 
-predictions ("var1.var"). (Aside: I'm not really sure why in this example, there are NA's 
+The result of the kriging is a data frame with coordinates (`x` and `y`), 
+predicted values of the variable (`var1.pred`), and variance of the 
+predictions (`var1.var`). (Aside: I'm not really sure why in this example, there are `NA`'s 
 for the prediction variance; I think it's because a variogram wasn't supplied 
 to form the predictions from. However, I'm almost not clear how there can be 
 predictions without that variogram, but I haven't studied much of the theory 
 behind this yet).
 
 These results, again, can be graphed with the sp package's functions, or 
-otherwise with ggplot2:
+otherwise with `ggplot2`:
 
 
 ```r
@@ -451,7 +469,13 @@ spplot(zinc.idw["var1.pred"], main="zinc inverse distance weighted interpolation
 ```r
 #same spplot with ggplot 
 library(scales)
+```
 
+```
+## Warning: package 'scales' was built under R version 3.1.3
+```
+
+```r
 zinc.idw %>% as.data.frame %>% 
   ggplot(aes(x=x, y=y, fill=var1.pred)) + geom_tile() + theme_bw() + 
   coord_equal() + scale_fill_gradient(low = "red", high="yellow") + 
@@ -464,7 +488,7 @@ zinc.idw %>% as.data.frame %>%
 One advantage of ggplot2 in this case is the amount of control over the color 
 scheme (as well as other aspects of the plot). In the example above, I stuck 
 to the red-to-yellow scale used earlier. Although, note that here, red doesn't 
-represent "0" anymore.
+represent `0` anymore.
 
 
 ```r
@@ -492,7 +516,7 @@ introduction to variograms, see
 [Allison Lassiter's website](http://allisonlassiter.com/2014/05/13/kriging-overview-part-1-variograms/).
 
 Basically, while we did interpolate using a relationship for zinc, we might 
-want to explore how log(zinc) varies over space. For this, we can plot a 
+want to explore how `log(zinc)`` varies over space. For this, we can plot a 
 variogram. First, the code, then more explanation about what the code does.
 
 
@@ -554,7 +578,7 @@ there are 155 * 154 / 2 = 11,935 point pairs; see the plot above with
 the points graphed). If we plot this object itself, we just get the sample 
 variogram, without any fit to it (try it!). 
 
-To perform a fit, we call the fit.variogram function, and pass it two 
+To perform a fit, we call the `fit.variogram` function, and pass it two 
 parameters: a variogram object, and a model we want to fit the data to. With the 
 model specified, the function would find the optimal (in some sense) parameters 
 for that model to fit  the data. 
@@ -563,11 +587,11 @@ In this tutorial, a spherical model is used. The book Applied Spatial Data Analy
 with R (ASDAR) has the complete list of variogram models one can use. And while 
 the functional forms of those models aren't included, a more 
 graphical/qualitative display of characteristics for different variogram models, 
-is available by calling the function: show.vgms(). 
+is available by calling the function: `show.vgms()`. 
 
 Now if you plot the variogram and the fit, you (surprise!) get both together. 
 
-But we might not like that model. So we could try to see how log(zinc) varies 
+But we might not like that model. So we could try to see how `log(zinc)` varies 
 with the square root of distance. This time, we'll try an exponential model. 
 Otherwise, everything is pretty much the same as before:
 
