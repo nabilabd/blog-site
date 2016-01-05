@@ -2,16 +2,18 @@
 title: "Reading/Writing with ncdf files in R"
 author: "nabil Abd."
 date: "September 13, 2015"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+* [http://github.com/nabilabd/](http://github.com/nabilabd/)
+
 ## Background
 
-This is basically taken (with minor modifications and commentary) from the man page of the ncdf package, and [this extremely useful webpage](http://www.image.ucar.edu/GSP/Software/Netcdf/), which explores in much more detail some about the netcdf format, and about working with it.
+This is largely taken (with minor modifications and commentary) from the man page of the ncdf package, and [this extremely useful webpage](http://www.image.ucar.edu/GSP/Software/Netcdf/), which explores in much more detail some about the netcdf format, and about working with it. I thought it would be helpful to consolidate the disparate references, and see the output as well.
 
 ## Reading from ncdf
 
@@ -110,7 +112,7 @@ close.ncdf(nc.ex)
 
 ## See Also
 
-[This was also very helpful](http://freakonometrics.hypotheses.org/20227) in acclimating to working with netcdf files.
+[This blog post was also very helpful](http://freakonometrics.hypotheses.org/20227) in acclimating to working with netcdf files.
 
 
 

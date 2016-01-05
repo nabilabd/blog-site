@@ -1,6 +1,6 @@
 ---
 title: "Introduction to Kriging in R"
-author: "nabil Abd..."
+author: "Nabil A."
 date: "October 14, 2015"
 output: html_document
 ---
