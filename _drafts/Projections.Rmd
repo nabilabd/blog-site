@@ -1,0 +1,236 @@
+---
+title: "Projections"
+author: "nabil Abd..."
+date: "November 18, 2015"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+Typically, computations with spatial data (e.g., kriging) require that there be a 
+projection associated with the coordinates. The problem is, how do you find the 
+projection your coordinates are in? And even if you know what the projection is, 
+then how do you assign/associate it to your data? 
+
+In the following, we seek to present some motivation for why it's important to 
+be aware of how to work with projections, as well as what one can do with them, 
+including common use-cases that typically arise in my work.
+
+### Motivation: An Equivalence 
+
+If you noticed on the [intro to kriging](http://rpubs.com/nabilabd/118172) for this 
+series, there was an example with the meuse dataset:
+
+
+```{r}
+suppressPackageStartupMessages({
+  library(sp)
+  library(gstat)
+  library(devtools)
+  library(magrittr)
+})
+dev_mode()
+library(dplyr, warn=F, quietly = T)
+
+# re-initialize the two datasets
+initialize <- function() {data(meuse); data(meuse.grid)}
+
+data(meuse)
+coordinates(meuse) <- ~ x + y
+
+lzn.vgm <- variogram(log(zinc) ~ 1, meuse) # calculates sample variogram values
+lzn.fit <- fit.variogram(lzn.vgm, vgm(1, "Sph", 900, 1))
+```
+
+However, note that in this kriging example, there was no 
+projection specified with the coordinates of the `meuse` SPDF or for `meuse.grid`; rather, just the variables which represented the coordinates of the spatial domain. As mentioned in ASDAR, p.216-7, if no projection is specified, the predicted values from the `krige` function are simply the prediction of a linear model. To see this equivalence, we can perform both kinds of predictions and look at the difference between them: 
+
+```{r}
+
+data(meuse.grid)
+coordinates(meuse.grid) <- ~ x + y
+
+# krige predictions
+lzn.kriged <- krige(log(zinc) ~ sqrt(dist), meuse, meuse.grid) # NB: different results if model=lzn.fit is set
+orig_kriging_res <- lzn.kriged %>% as.data.frame %>% tbl_df
+orig_kriging_res
+
+# lm works with dataframes, so prepare data
+meuse_df <- as.data.frame(meuse)
+mgrid_df <- as.data.frame(meuse.grid)
+
+# calculate linear model predictions
+linmod <- lm(log(zinc) ~ sqrt(dist), data = meuse_df)
+model_res <- predict.lm(linmod, mgrid_df)
+
+# compare predictions
+orig_kriging_res2 <- orig_kriging_res %>% 
+  mutate(mod_res = unname(model_res), difference = mod_res - var1.pred)
+
+# the linear model and kriging results are the same
+range(orig_kriging_res2$difference) # diff taken since the two columns aren't showing as "equal"
+
+```
+
+Footnote: Initially regressed to a constant, which is silly. In this case, though, using a constant instead of, e.g., `sqrt(dist)`, then inverse distance weighting is used for the kriging.
+
+The take-away, then, is that the "kriging" performed on the `meuse` dataset from before, does not actually contain the results that we want. To calculate actua kriging results, we need to assign the spatial data with the appropriate projection.
+
+## Projecting
+
+Once you know you want to project your spatial data, first you need to identify and find the appropriate projection, assign it, and then use it.
+
+### Finding Projection Information
+
+First, before we can assign a projection, sometimes we have to find how to identify what projection exactly we're looking to work with. Sometimes, if
+you're lucky, there might be a column in the dataset containing the corresponding projection, like in some EPA air quality datasets, for example. But if that's not the case, then you can try using some of the sites below in `References` or do a quick Google search. As for precisely what information you're looking for, that's mentioned in the next section.
+
+### Projection Assignment
+
+To assign a projection, you'd need one of two things: 
+
+1. The epsg code
+2. the complete proj4 string
+
+Once you know the name of the projection you're looking for (e.g., "Lambert Conformal Conical"), some basic Google-fu skills can go a long way in finding either of the two requirements needed for assigning a projection. 
+
+The assignment would be done as follows, depending on which of two you have:
+
+```{r, eval=FALSE}
+proj4string(my_df) <- CRS("+init=epsg:EPSG_CODE")
+proj4string(my_df) <- CRS("PROJ4_STRING")
+```
+
+The benefit of the first method (i.e., specifying the epsg code), is that it's 
+usually much shorter than the proj4 string, while both methods provide basically 
+the same information. Also, if you are ever need the proj4 string but you know the epsg code, then you can assign the epsg code, and the spatial object would automatically 
+contain the proj4 string information. For example, 
+
+```{r}
+# reloading data so it is a dataframe and not SpatialPoints df
+data(meuse) 
+meuse %>% glimpse
+coordinates(meuse) <- ~ x + y # specify coordinates
+
+# note that no projection is assigned yet to the SPDF:
+slotNames(meuse)
+slot(meuse, "proj4string")
+
+# assigning epsg value results in proj4string assignment
+proj4string(meuse) <- CRS("+init=epsg:28992") # see below about the number
+slot(meuse, "proj4string") 
+```
+
+The next section illustrates how the projection is made use of in actual computations. And if you're wondering why not just keep it simple and specify the longitude/latitude coordinates, there is to be an example below in the next section also, demonstrating why that won't always work.
+
+### Kriging with Projections
+
+The help file for the `meuse` dataset indicates that the `x` and `y` fields 
+are in RDH Netherlands-local coordinates. With some quick Googling, we find a web page [here](http://static-content.springer.com/esm/art%3A10.1186%2F1476-072X-11-41/MediaObjects/12942_2012_517_MOESM5_ESM.txt) that contains the EPSG code, 28992.
+
+
+```{r}
+data(meuse.grid)
+coordinates(meuse.grid) <- ~ x + y
+proj4string(meuse.grid) <- CRS("+init=epsg:28992") # or, 3857
+
+lzn.vgm2 <- variogram(log(zinc) ~ 1, meuse) # calculates sample variogram values
+lzn.fit2 <- fit.variogram(lzn.vgm, vgm(1, "Sph", 900, 1))
+
+proj_kriging_res <- krige(log(zinc) ~ 1, meuse, meuse.grid, model=lzn.fit2)
+projected_res <- proj_kriging_res %>% as.data.frame %>% tbl_df
+projected_res
+
+``` 
+
+By comparing these kriging results using projected data with `orig_kriging_res` above, 
+we can see the predicted values are rather different.
+
+### But What's Wrong Mercator?  
+
+At this point, you might be wondering, why do I have to find some obscure and foreign (re: non-Amurrican) projection when I can just use regular long-lat coordinates? 
+
+Sometimes, even trying to assign the Mercator projection to your spatial data 
+will result in an error, like if the coordinates are outside the range possible 
+for long/lat coordinates. For example, where we use [this intro to coordinate reference systems](https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/OverviewCoordinateReferenceSystems.pdf) to find that the long-lat code is 4326, try running the following code, which should produce an error: 
+
+```{r, eval=FALSE}
+data("meuse")
+coordinates(meuse) <- ~ x + y
+proj4string(meuse) <- CRS("+init=epsg:4326")
+```
+
+Additionally, in my experience there have been occasions where the kriging would 
+not work if the data were unprojected (I think the `automap` package makes an 
+assumption about the projection if none is specified), but that was some time back 
+and the author has yet to find a reproducible example for how it fails.
+
+#### Conversions
+
+If you have coordinates in one reference system (e.g., RDH, to continue the Netherlands 
+example from above), and would like to convert them coordinates you're more 
+familiar with (e.g., long-lat), then you can use the `rgdal::spTransform` function. 
+Note that depending on the computer system you're working with, it might take a little 
+bit of effort to install `rgdal` (or, it did for me, but not sure how much of that 
+was just me).
+
+An important fact to keep in mind is that `spTransform` takes some spatial object, not a 
+dataframe, as an argument, and returns a SpatialPoints object as well. So, if you're working 
+with dataframes, you might have to do some converting back and forth in the process.
+
+As an example, let's try to convert the RDH coordinates to long-lat. For this, 
+you need the EPSG code or proj4 string of the CRS you want to convert to. The process is 
+then relatively straightforward: 
+
+```{r}
+# select coordinates, and form SPDF
+rdh_coords <- meuse %>% as.data.frame %>% select(x, y) 
+rdh_coords %>% glimpse
+coordinates(rdh_coords) <- ~ x + y
+proj4string(rdh_coords) <- CRS("+init=epsg:28992")
+
+# convert to long/lat coords
+longlat_coords <- rdh_coords %>% spTransform(CRS("+init=epsg:4326"))
+longlat_coords %>% str
+longlat_coords %>% as.data.frame %>% glimpse
+```
+
+In my work, this kind of conversion to long-lat coordinates can be extremely 
+useful, to have some kind of sense of what the coordinates mean in terms of something 
+I'm more familiar with. In particular, if I have coordinates in some non-Mercator 
+projection, I keep those original coordinates, then also convert them to 
+long-lat, and simply keep track of both, along with an identifier (e.g., grid cell ID) 
+which uniquely identifies each element in the spatial domain. 
+
+
+## Conclusion
+
+Projections are important. And if you're working with spatial (or spatio-temporal) data 
+beyond just assigning coordinates and times, if you want to do actual computations with 
+that data, then knowing how to assign and make use of different projections will 
+probably come in handy.
+
+
+## References 
+
+The following are helpful references relating to the topic
+
+* [SpatialReference.org](http://spatialreference.org/)
+* For [more detailed notes](http://www.remotesensing.org/geotiff/proj_list/) and 
+  general information on various projections
+* For [more on proj4 parameters](http://proj.maptools.org/gen_parms.html)
+* Melanie Wood has a lot of very useful [work](https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/OverviewCoordinateReferenceSystems.pdf) on working with spatial data in R.
+
+
+## Workspace
+
+```{r}
+session_info()
+```
+
+
+
